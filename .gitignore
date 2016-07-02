@@ -1,0 +1,8 @@
+.idea
+npm-debug.log
+node_modules
+dist
+typings
+src/**/*.js
+src/**/*.js.map
+.DS_Store

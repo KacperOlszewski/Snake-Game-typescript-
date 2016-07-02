@@ -1,0 +1,25 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "scripts": {
+    "clean": "if test -d dist/; then rm -r dist; fi",
+    "build": "webpack --progress",
+    "build:prod": "webpack -p --progress",
+    "serve": "webpack && webpack-dev-server --inline",
+    "postinstall": "$(npm bin)/typings install"
+  },
+  "devDependencies": {
+    "css-loader": "^0.23.1",
+    "html-loader": "0.4.3",
+    "html-webpack-plugin": "^2.21.0",
+    "node-sass": "^3.7.0",
+    "raw-loader": "^0.5.1",
+    "sass-loader": "^3.2.0",
+    "style-loader": "^0.13.1",
+    "ts-loader": "0.8.2",
+    "typescript": "1.8.10",
+    "typings": "1.1.0",
+    "webpack": "1.13.1",
+    "webpack-dev-server": "1.14.1"
+  }
+}
