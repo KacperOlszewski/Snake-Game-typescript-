@@ -15,11 +15,19 @@ export class Point {
         this.height = 10;
     }
 
-    moveToPoint(parent: Point) {
+    tailFollows(parent: Point) {
         if (this.tail != null) {
-            this.tail.moveToPoint(this);
+            this.tail.tailFollows(this);
         }
         this.x = parent.x;
         this.y = parent.y;
+    }
+
+    newTail() {
+        if (this.tail != null) {
+            this.tail.newTail();
+        } else {
+            this.tail = new Point(this.x, this.y);
+        }
     }
 }

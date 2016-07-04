@@ -5,6 +5,10 @@ enum Direction {
     Left, Right, Up, Down
 }
 
+enum Axis {
+    x, y
+}
+
 class Snake {
     head: Point;
 
@@ -20,7 +24,8 @@ class SnakeGame {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
     snake: Snake;
-    speed: number = 80;
+    food: Point;
+    speed: number = 90;
     step: number;
     direction: Direction;
 
@@ -34,6 +39,10 @@ class SnakeGame {
 
     restart(): void {
         this.snake = new Snake();
+        this.food = new Point(
+            this.spawnFood(Axis.x),
+            this.spawnFood(Axis.y)
+        );
         this.direction = Direction.Right;
     }
 
@@ -46,6 +55,7 @@ class SnakeGame {
 
     tick(): void {
         this.move();
+        this.eat();
         this.draw();
         if (this.snakeIsOutside())
             this.restart();
@@ -61,10 +71,12 @@ class SnakeGame {
             this.context.fillRect(snake.x, snake.y, snake.width, snake.height);
             snake = snake.tail;
         }
+
+        this.context.fillRect(this.food.x, this.food.y, this.food.width, this.food.height);
     }
 
     move(): void {
-        this.snake.head.tail.moveToPoint(this.snake.head);
+        this.snake.head.tail.tailFollows(this.snake.head);
 
         switch (this.direction) {
             case Direction.Right:
@@ -78,6 +90,30 @@ class SnakeGame {
                 break;
             case Direction.Up:
                 this.snake.head.y += this.step;
+        }
+    }
+
+    eat(): void {
+        let snake = this.snake.head,
+            food = this.food;
+        if (snake.x === food.x && snake.y === food.y) {
+            snake.tail.newTail();
+            food.x = this.spawnFood(Axis.x);
+            food.y = this.spawnFood(Axis.y);
+        }
+    }
+
+    spawnFood(axis: Axis): number {
+        let randomize = (range: number) => {
+            return Math.floor(Math.floor((Math.random() * range))/10)*10
+        };
+
+        switch (axis) {
+            case Axis.x:
+                return randomize(this.canvas.width);
+
+            case Axis.y:
+                return randomize(this.canvas.height);
         }
     }
 
