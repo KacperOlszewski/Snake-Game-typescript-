@@ -9,8 +9,14 @@ enum Axis {
     x, y
 }
 
+interface snakeArray {
+    x: number,
+    y: number
+}
+
 class Snake {
     head: Point;
+    snakeArray: snakeArray[];
 
     constructor() {
         this.head = new Point(80, 40);
@@ -22,23 +28,28 @@ class Snake {
 
 class SnakeGame {
     canvas: HTMLCanvasElement;
+    scoreOutput: HTMLElement;
     context: CanvasRenderingContext2D;
     snake: Snake;
     food: Point;
-    speed: number = 90;
+    score: number;
+    speed: number = 70;
     step: number;
     direction: Direction;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
         this.canvas = canvas;
         this.canvas.width = 500;
         this.canvas.height = 400;
         this.step = 10;
+        this.scoreOutput = scoreOutput;
         this.context = this.canvas.getContext("2d");
     }
 
     restart(): void {
         this.snake = new Snake();
+        this.snake.snakeArray = [];
+        this.score = 0;
         this.food = new Point(
             this.spawnFood(Axis.x),
             this.spawnFood(Axis.y)
@@ -54,10 +65,12 @@ class SnakeGame {
     }
 
     tick(): void {
+        this.printScore();
         this.move();
-        this.eat();
+        this.snakeLenght();
         this.draw();
-        if (this.snakeIsOutside())
+        this.eat();
+        if (this.snakeIsOutside() || this.snakeCollision())
             this.restart();
     }
 
@@ -96,11 +109,17 @@ class SnakeGame {
     eat(): void {
         let snake = this.snake.head,
             food = this.food;
+
         if (snake.x === food.x && snake.y === food.y) {
             snake.tail.newTail();
             food.x = this.spawnFood(Axis.x);
             food.y = this.spawnFood(Axis.y);
+            this.score++;
         }
+    }
+
+    printScore(): void {
+        this.scoreOutput.innerHTML = 'Score: ' + this.score*10;
     }
 
     spawnFood(axis: Axis): number {
@@ -115,6 +134,30 @@ class SnakeGame {
             case Axis.y:
                 return randomize(this.canvas.height);
         }
+    }
+
+    snakeLenght(): void {
+        this.snake.snakeArray = [];
+        let snake = this.snake.head.tail;
+
+         while (snake != null) {
+             this.snake.snakeArray.push({x: snake.x, y: snake.y});
+             snake = snake.tail
+         }
+    }
+
+    snakeCollision(): boolean {
+        let array = this.snake.snakeArray,
+            snake = this.snake.head,
+            result = false;
+
+        array.forEach((elem) => {
+            if (elem.x == snake.x && elem.y == snake.y) {
+                result = true;
+            }
+        });
+
+        return result;
     }
 
     changeDirection(e: KeyboardEvent) {
@@ -142,7 +185,7 @@ class SnakeGame {
 
     snakeIsOutside(): boolean {
         return this.snake.head.x <= 0
-            || this.snake.head.y <= 0
+            || this.snake.head.y <= -1
             || this.snake.head.x >= this.canvas.width
             || this.snake.head.y >= this.canvas.height
     }
@@ -157,7 +200,8 @@ var game: SnakeGame;
 window.onload = () => {
     document.onkeydown = keyboardListener;
 
-    var el = <HTMLCanvasElement> document.getElementById('game-canvas');
-    game = new SnakeGame(el);
+    var el = <HTMLCanvasElement> document.getElementById('game-canvas'),
+        score = document.getElementById('score');
+    game = new SnakeGame(el, score);
     game.start();
 };
