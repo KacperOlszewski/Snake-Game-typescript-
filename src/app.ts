@@ -17,44 +17,105 @@ interface snakeArray {
 class Snake {
     head: Point;
     snakeArray: snakeArray[];
+    direction: Direction;
+    color: string;
+    score: number = 0;
+    size: number;
 
-    constructor() {
-        this.head = new Point(80, 40);
-        this.head.tail = new Point(70, 40);
-        this.head.tail.tail = new Point(60, 40);
-        this.head.tail.tail.tail = new Point(50, 40);
+    constructor(
+        x: number,
+        y: number,
+        direction: Direction,
+        color: string = "#000000",
+        size: number = 10
+    ) {
+        this.head = new Point(x, y);
+        this.head.tail = new Point(x - 10, y);
+        this.head.tail.tail = new Point(x - 20, y);
+        this.head.tail.tail.tail = new Point(x - 30, y);
+
+        this.direction = direction;
+        this.color = color;
+        this.size = size;
     }
+
+    move() {
+        this.head.tail.tailFollows(this.head);
+
+        switch (this.direction) {
+            case Direction.Right:
+                this.head.x += this.size;
+                break;
+            case Direction.Down:
+                this.head.y -= this.size;
+                break;
+            case Direction.Left:
+                this.head.x -= this.size;
+                break;
+            case Direction.Up:
+                this.head.y += this.size;
+        }
+    }
+
+    eat(food: Point): boolean {
+        const snake = this.head;
+
+        if (snake.x === food.x && snake.y === food.y) {
+            snake.tail.newTail();
+            this.score++;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    snakeCollision(snakePositions: snakeArray[]): boolean {
+        return snakePositions.some((elem) => {
+            return elem.x == this.head.x && elem.y == this.head.y
+        });
+    }
+
+    snakeIsOutside(boundries: HTMLCanvasElement): boolean {
+        return this.head.x <= 0
+            || this.head.y <= -1
+            || this.head.x >= boundries.width
+            || this.head.y >= boundries.height;
+    }
+
 }
 
 class SnakeGame {
     canvas: HTMLCanvasElement;
     scoreOutput: HTMLElement;
     context: CanvasRenderingContext2D;
+    Players: Snake[];
     snake: Snake;
+    snakePositions: snakeArray[];
     food: Point;
     score: number;
-    speed: number = 70;
+    speed: number = 80;
     step: number;
-    direction: Direction;
 
     constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
         this.canvas = canvas;
-        this.canvas.width = 500;
-        this.canvas.height = 400;
+        this.canvas.width = 450;
+        this.canvas.height = 300;
         this.step = 10;
         this.scoreOutput = scoreOutput;
         this.context = this.canvas.getContext("2d");
     }
 
     restart(): void {
-        this.snake = new Snake();
-        this.snake.snakeArray = [];
-        this.score = 0;
+        this.Players = [
+            new Snake(50, 50, Direction.Right),
+            new Snake(100, 120, Direction.Right, 'BADA55')
+        ];
+        this.snakePositions = [];
         this.food = new Point(
             this.spawnFood(Axis.x),
             this.spawnFood(Axis.y)
         );
-        this.direction = Direction.Right;
     }
 
     start(): void {
@@ -65,57 +126,50 @@ class SnakeGame {
     }
 
     tick(): void {
-        this.printScore();
-        this.move();
         this.snakeLenght();
-        this.draw();
-        this.eat();
-        if (this.snakeIsOutside() || this.snakeCollision())
+        this.move();
+        if (this.snakeIsOutside() || this.snakeCollision()) {
             this.restart();
+        }
+        this.eat();
+        this.draw();
     }
 
     draw(): void {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillStyle = "#000000";
 
-        let snake = this.snake.head;
+        this.Players.forEach((player) => {
+            let snake = player.head;
 
-        while (snake != null) {
-            this.context.fillRect(snake.x, snake.y, snake.width, snake.height);
-            snake = snake.tail;
-        }
+            while (snake != null) {
+                this.context.fillRect(snake.x, snake.y, snake.width, snake.height);
+                snake = snake.tail;
+            }
+        });
 
         this.context.fillRect(this.food.x, this.food.y, this.food.width, this.food.height);
     }
 
     move(): void {
-        this.snake.head.tail.tailFollows(this.snake.head);
-
-        switch (this.direction) {
-            case Direction.Right:
-                this.snake.head.x += this.step;
-                break;
-            case Direction.Down:
-                this.snake.head.y -= this.step;
-                break;
-            case Direction.Left:
-                this.snake.head.x -= this.step;
-                break;
-            case Direction.Up:
-                this.snake.head.y += this.step;
-        }
+        this.Players.forEach((snake) => {
+            snake.move();
+        });
     }
 
     eat(): void {
-        let snake = this.snake.head,
-            food = this.food;
+        const food = this.food;
 
-        if (snake.x === food.x && snake.y === food.y) {
-            snake.tail.newTail();
-            food.x = this.spawnFood(Axis.x);
-            food.y = this.spawnFood(Axis.y);
-            this.score++;
-        }
+        this.Players.some((snake) => {
+            if (snake.eat(food)) {
+                food.x = this.spawnFood(Axis.x);
+                food.y = this.spawnFood(Axis.y);
+
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     printScore(): void {
@@ -137,27 +191,28 @@ class SnakeGame {
     }
 
     snakeLenght(): void {
-        this.snake.snakeArray = [];
-        let snake = this.snake.head.tail;
+        this.snakePositions = [];
 
-         while (snake != null) {
-             this.snake.snakeArray.push({x: snake.x, y: snake.y});
-             snake = snake.tail
-         }
+        this.Players.forEach((snake) => {
+            let shlong = snake.head.tail;
+
+            while (shlong != null) {
+                this.snakePositions.push({x: shlong.x, y: shlong.y});
+                shlong = shlong.tail;
+            }
+        });
     }
 
     snakeCollision(): boolean {
-        let array = this.snake.snakeArray,
-            snake = this.snake.head,
-            result = false;
-
-        array.forEach((elem) => {
-            if (elem.x == snake.x && elem.y == snake.y) {
-                result = true;
-            }
+        return this.Players.some((elem) => {
+            return elem.snakeCollision(this.snakePositions)
         });
+    }
 
-        return result;
+    snakeIsOutside(): boolean {
+        return this.Players.some((snake) => {
+            return snake.snakeIsOutside(this.canvas);
+        });
     }
 
     changeDirection(e: KeyboardEvent) {
@@ -165,29 +220,39 @@ class SnakeGame {
 
         switch (key) {
             case 39:
-                if (this.direction != Direction.Left)
-                    this.direction = Direction.Right;
+                if (this.Players[0].direction != Direction.Left)
+                    this.Players[0].direction = Direction.Right;
                 break;
             case 40:
-                if (this.direction != Direction.Down)
-                    this.direction = Direction.Up;
+                if (this.Players[0].direction != Direction.Down)
+                    this.Players[0].direction = Direction.Up;
                 break;
             case 37:
-                if (this.direction != Direction.Right)
-                    this.direction = Direction.Left;
+                if (this.Players[0].direction != Direction.Right)
+                    this.Players[0].direction = Direction.Left;
                 break;
             case 38:
-                if (this.direction != Direction.Up)
-                    this.direction = Direction.Down;
+                if (this.Players[0].direction != Direction.Up)
+                    this.Players[0].direction = Direction.Down;
+                break;
+
+            case 68:
+                if (this.Players[1].direction != Direction.Left)
+                    this.Players[1].direction = Direction.Right;
+                break;
+            case 83:
+                if (this.Players[1].direction != Direction.Down)
+                    this.Players[1].direction = Direction.Up;
+                break;
+            case 65:
+                if (this.Players[1].direction != Direction.Right)
+                    this.Players[1].direction = Direction.Left;
+                break;
+            case 87:
+                if (this.Players[1].direction != Direction.Up)
+                    this.Players[1].direction = Direction.Down;
                 break;
         }
-    }
-
-    snakeIsOutside(): boolean {
-        return this.snake.head.x <= 0
-            || this.snake.head.y <= -1
-            || this.snake.head.x >= this.canvas.width
-            || this.snake.head.y >= this.canvas.height
     }
 }
 

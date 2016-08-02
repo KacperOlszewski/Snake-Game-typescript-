@@ -8,11 +8,11 @@ export class Point {
 
     tail: Point;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, size: number = 10) {
         this.x = x;
         this.y = y;
-        this.width = 10;
-        this.height = 10;
+        this.width = size;
+        this.height = size;
     }
 
     tailFollows(parent: Point) {
