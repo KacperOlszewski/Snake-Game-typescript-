@@ -13,7 +13,7 @@ class SnakeGame {
     snakePositions: snakeArray[];
     food: Point;
     score: number;
-    speed: number = 80;
+    speed: number = 100;
     step: number;
 
     constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
@@ -27,8 +27,8 @@ class SnakeGame {
 
     restart(): void {
         this.Players = [
-            new Snake(50, 50, Direction.Right),
-            new Snake(100, 120, Direction.Right, 'BADA55')
+            new Snake('Player1' , 50, 50, Direction.Right),
+            new Snake('Player 2', 100, 260, Direction.Right, 'BADA55')
         ];
         this.snakePositions = [];
         this.food = new Point(
@@ -113,19 +113,36 @@ class SnakeGame {
         this.snakePositions = [];
 
         this.Players.forEach((snake) => {
-            let shlong = snake.head.tail;
+            let body = snake.head.tail,
+                head = snake.head;
 
-            while (shlong != null) {
-                this.snakePositions.push({x: shlong.x, y: shlong.y});
-                shlong = shlong.tail;
+            while (body != null) {
+                this.snakePositions.push({x: body.x, y: body.y});
+                body = body.tail;
             }
+
+
         });
     }
 
     snakeCollision(): boolean {
-        return this.Players.some((elem) => {
-            return elem.snakeCollision(this.snakePositions)
+        return this.Players.some((elem, index) => {
+            return elem.snakeCollision(this.snakePositions, this.snakeHead(index))
         });
+    }
+
+    snakeHead(snakeNumber: number): snakeArray[] {
+        let heads: snakeArray[] = [];
+
+        for (let i = 0; i < this.Players.length; i++) {
+            if (i != snakeNumber) {
+                heads.push({
+                    x: this.Players[i].head.x,
+                    y: this.Players[i].head.y
+                })
+            }
+        }
+        return heads;
     }
 
     snakeIsOutside(): boolean {
@@ -143,6 +160,7 @@ class SnakeGame {
                     this.Players[0].direction = Direction.Right;
                 break;
             case 40:
+                console.log(key);
                 if (this.Players[0].direction != Direction.Down)
                     this.Players[0].direction = Direction.Up;
                 break;
@@ -154,7 +172,6 @@ class SnakeGame {
                 if (this.Players[0].direction != Direction.Up)
                     this.Players[0].direction = Direction.Down;
                 break;
-
             case 68:
                 if (this.Players[1].direction != Direction.Left)
                     this.Players[1].direction = Direction.Right;

@@ -2,6 +2,7 @@ import { Point } from './point';
 import { Direction, snakeArray } from './helpers';
 
 export class Snake {
+    name: string;
     head: Point;
     snakeArray: snakeArray[];
     direction: Direction;
@@ -10,6 +11,7 @@ export class Snake {
     size: number;
 
     constructor(
+        name: string,
         x: number,
         y: number,
         direction: Direction,
@@ -57,17 +59,22 @@ export class Snake {
         return false;
     }
 
-    snakeCollision(snakePositions: snakeArray[]): boolean {
-        return snakePositions.some((elem) => {
-            return elem.x == this.head.x && elem.y == this.head.y
+    snakeCollision(snakePositions: snakeArray[], snakeHeads: snakeArray[]): boolean {
+        const collisions = snakePositions.concat(snakeHeads);
+
+        return collisions.some((elem) => {
+            return elem.x == this.head.x && elem.y == this.head.y;
         });
     }
 
-    snakeIsOutside(boundries: HTMLCanvasElement): boolean {
+    snakeIsOutside(canvas: HTMLCanvasElement): boolean {
         return this.head.x <= 0
             || this.head.y <= -1
-            || this.head.x >= boundries.width
-            || this.head.y >= boundries.height;
+            || this.head.x >= canvas.width
+            || this.head.y >= canvas.height;
     }
 
+    SnakeLost() {
+        console.log(this.name + ' has lost');
+    }
 }

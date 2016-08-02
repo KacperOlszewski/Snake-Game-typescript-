@@ -8,7 +8,7 @@ export class Point {
 
     tail: Point;
 
-    constructor(x: number, y: number, size: number = 10) {
+    constructor(x: number, y: number, size: number = 9) {
         this.x = x;
         this.y = y;
         this.width = size;
