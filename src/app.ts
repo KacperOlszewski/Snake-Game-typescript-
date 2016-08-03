@@ -11,30 +11,31 @@ class SnakeGame {
     Players: Snake[];
     snake: Snake;
     snakePositions: snakeArray[];
-    food: Point;
+    food: Point[];
     score: number;
-    speed: number = 100;
+    speed: number = 200;
     step: number;
 
-    constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
+    constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement, playersConstruction: number) {
         this.canvas = canvas;
-        this.canvas.width = 450;
-        this.canvas.height = 300;
+        this.canvas.width = 500;
+        this.canvas.height = 450;
         this.step = 10;
         this.scoreOutput = scoreOutput;
         this.context = this.canvas.getContext("2d");
     }
 
     restart(): void {
+        this.snakePositions = [];
         this.Players = [
-            new Snake('Player1' , 50, 50, Direction.Right),
+            new Snake('Player 1' , 50, 50, Direction.Right),
             new Snake('Player 2', 100, 260, Direction.Right, 'BADA55')
         ];
-        this.snakePositions = [];
-        this.food = new Point(
-            this.spawnFood(Axis.x),
-            this.spawnFood(Axis.y)
-        );
+        this.food = [
+            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y)),
+            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y)),
+            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y))
+        ];
     }
 
     start(): void {
@@ -66,8 +67,9 @@ class SnakeGame {
                 snake = snake.tail;
             }
         });
-
-        this.context.fillRect(this.food.x, this.food.y, this.food.width, this.food.height);
+        this.food.forEach((food) => {
+            this.context.fillRect(food.x, food.y, food.width, food.height);
+        });
     }
 
     move(): void {
@@ -77,16 +79,14 @@ class SnakeGame {
     }
 
     eat(): void {
-        const food = this.food;
+        this.Players.forEach((snake) => {
+            if (snake.eat(this.food) > -1) {
+                let foodIndex = snake.eat(this.food);
 
-        this.Players.some((snake) => {
-            if (snake.eat(food)) {
-                food.x = this.spawnFood(Axis.x);
-                food.y = this.spawnFood(Axis.y);
+                console.log(foodIndex);
 
-                return true;
-            } else {
-                return false;
+                this.food[foodIndex].x = this.spawnFood(Axis.x);
+                this.food[foodIndex].y = this.spawnFood(Axis.y);
             }
         });
     }
@@ -203,6 +203,6 @@ window.onload = () => {
 
     var el = <HTMLCanvasElement> document.getElementById('game-canvas'),
         score = document.getElementById('score');
-    game = new SnakeGame(el, score);
+    game = new SnakeGame(el, score, 2);
     game.start();
 };

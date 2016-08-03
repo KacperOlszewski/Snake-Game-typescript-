@@ -4,7 +4,6 @@ import { Direction, snakeArray } from './helpers';
 export class Snake {
     name: string;
     head: Point;
-    snakeArray: snakeArray[];
     direction: Direction;
     color: string;
     score: number = 0;
@@ -46,17 +45,20 @@ export class Snake {
         }
     }
 
-    eat(food: Point): boolean {
+    eat(food: Point[]) {
         const snake = this.head;
+        let foodIndex = -1;
 
-        if (snake.x === food.x && snake.y === food.y) {
-            snake.tail.newTail();
-            this.score++;
+        food.some((food, index) => {
+            if (snake.x === food.x && snake.y === food.y) {
+                snake.tail.newTail();
+                this.score++;
 
-            return true;
-        }
+                foodIndex = index
+            }
+        });
 
-        return false;
+        return foodIndex;
     }
 
     snakeCollision(snakePositions: snakeArray[], snakeHeads: snakeArray[]): boolean {
