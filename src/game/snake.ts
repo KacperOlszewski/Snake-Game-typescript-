@@ -10,17 +10,19 @@ export class Snake {
     size: number;
 
     constructor(
-        name: string,
+        number: number,
         x: number,
         y: number,
         direction: Direction,
         color: string = "#000000",
         size: number = 10
     ) {
+        this.name = 'Player '+ number;
         this.head = new Point(x, y);
-        this.head.tail = new Point(x - 10, y);
-        this.head.tail.tail = new Point(x - 20, y);
-        this.head.tail.tail.tail = new Point(x - 30, y);
+        this.head.tail = new Point(x, y);
+        this.head.tail.tail = new Point(x, y);
+        this.head.tail.tail.tail = new Point(x, y);
+        this.head.tail.tail.tail.tail = new Point(x, y);
 
         this.direction = direction;
         this.color = color;
@@ -45,16 +47,16 @@ export class Snake {
         }
     }
 
-    eat(food: Point[]) {
+    eat(foodArray: any): number {
         const snake = this.head;
         let foodIndex = -1;
 
-        food.some((food, index) => {
-            if (snake.x === food.x && snake.y === food.y) {
+        foodArray.some((food: Point, index: number) => {
+            if (snake.x == food.x && snake.y == food.y) {
                 snake.tail.newTail();
                 this.score++;
 
-                foodIndex = index
+                foodIndex = index;
             }
         });
 
@@ -65,18 +67,22 @@ export class Snake {
         const collisions = snakePositions.concat(snakeHeads);
 
         return collisions.some((elem) => {
-            return elem.x == this.head.x && elem.y == this.head.y;
+            if (elem.x == this.head.x && elem.y == this.head.y) {
+                this.SnakeLost();
+                return true;
+            }
         });
     }
 
     snakeIsOutside(canvas: HTMLCanvasElement): boolean {
-        return this.head.x <= 0
+
+        return this.head.x <= -1
             || this.head.y <= -1
             || this.head.x >= canvas.width
             || this.head.y >= canvas.height;
     }
 
-    SnakeLost() {
+    SnakeLost(): void {
         console.log(this.name + ' has lost');
     }
 }

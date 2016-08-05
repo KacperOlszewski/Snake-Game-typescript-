@@ -5,18 +5,19 @@ import './style.scss';
 
 
 class SnakeGame {
+    playerNumber: number;
     canvas: HTMLCanvasElement;
     scoreOutput: HTMLElement;
     context: CanvasRenderingContext2D;
     Players: Snake[];
-    snake: Snake;
     snakePositions: snakeArray[];
     food: Point[];
     score: number;
-    speed: number = 200;
+    speed: number = 1100;
     step: number;
 
-    constructor(canvas: HTMLCanvasElement, scoreOutput: HTMLElement, playersConstruction: number) {
+    constructor(playersConstruction: number, canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
+        this.playerNumber = playersConstruction;
         this.canvas = canvas;
         this.canvas.width = 500;
         this.canvas.height = 450;
@@ -27,15 +28,23 @@ class SnakeGame {
 
     restart(): void {
         this.snakePositions = [];
-        this.Players = [
-            new Snake('Player 1' , 50, 50, Direction.Right),
-            new Snake('Player 2', 100, 260, Direction.Right, 'BADA55')
-        ];
-        this.food = [
-            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y)),
-            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y)),
-            new Point(this.spawnFood(Axis.x), this.spawnFood(Axis.y))
-        ];
+        this.Players = [];
+        this.food = [];
+
+        for (let i = 0; i < this.playerNumber; i++) {
+            let X = this.spawnFood(Axis.x),
+                Y = this.spawnFood(Axis.y),
+                direction = X < this.canvas.width/2 ? Direction.Right : Direction.Left;
+
+            this.Players.push(new Snake(i, X, Y, direction, this.getRandomColor()));
+        }
+
+        for (let i = 0; i <= this.playerNumber; i++) {
+            let X = this.spawnFood(Axis.x),
+                Y = this.spawnFood(Axis.y);
+
+            this.food.push(new Point(X, Y));
+        }
     }
 
     start(): void {
@@ -46,29 +55,36 @@ class SnakeGame {
     }
 
     tick(): void {
-        this.snakeLenght();
+        this.draw();
         this.move();
-        if (this.snakeIsOutside() || this.snakeCollision()) {
+        this.snakeCollision();
+        this.snakeLenght();
+        if (this.snakeIsOutside()) {
             this.restart();
         }
         this.eat();
-        this.draw();
     }
 
     draw(): void {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillStyle = "#000000";
 
         this.Players.forEach((player) => {
+            this.context.beginPath();
+            this.context.fillStyle = player.color;
+
             let snake = player.head;
 
             while (snake != null) {
                 this.context.fillRect(snake.x, snake.y, snake.width, snake.height);
                 snake = snake.tail;
             }
+            this.context.closePath();
         });
         this.food.forEach((food) => {
+            this.context.beginPath();
+            this.context.fillStyle = '#5bc236';
             this.context.fillRect(food.x, food.y, food.width, food.height);
+            this.context.closePath();
         });
     }
 
@@ -82,8 +98,6 @@ class SnakeGame {
         this.Players.forEach((snake) => {
             if (snake.eat(this.food) > -1) {
                 let foodIndex = snake.eat(this.food);
-
-                console.log(foodIndex);
 
                 this.food[foodIndex].x = this.spawnFood(Axis.x);
                 this.food[foodIndex].y = this.spawnFood(Axis.y);
@@ -113,21 +127,20 @@ class SnakeGame {
         this.snakePositions = [];
 
         this.Players.forEach((snake) => {
-            let body = snake.head.tail,
-                head = snake.head;
+            let body = snake.head.tail;
 
             while (body != null) {
                 this.snakePositions.push({x: body.x, y: body.y});
                 body = body.tail;
             }
-
-
         });
     }
 
-    snakeCollision(): boolean {
-        return this.Players.some((elem, index) => {
-            return elem.snakeCollision(this.snakePositions, this.snakeHead(index))
+    snakeCollision(): void {
+        this.Players.forEach((elem, index) => {
+            if (elem.snakeCollision(this.snakePositions, this.snakeHead(index))) {
+                this.Players.length <= 2 ? this.restart() : this.Players.splice(index, 1)
+            }
         });
     }
 
@@ -151,6 +164,16 @@ class SnakeGame {
         });
     }
 
+    getRandomColor() {
+        let letters = '0123456789ABCDEF',
+            color = '#';
+
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * letters.length)];
+        }
+        return color;
+    }
+
     changeDirection(e: KeyboardEvent) {
         var key = e.keyCode;
 
@@ -160,7 +183,6 @@ class SnakeGame {
                     this.Players[0].direction = Direction.Right;
                 break;
             case 40:
-                console.log(key);
                 if (this.Players[0].direction != Direction.Down)
                     this.Players[0].direction = Direction.Up;
                 break;
@@ -203,6 +225,6 @@ window.onload = () => {
 
     var el = <HTMLCanvasElement> document.getElementById('game-canvas'),
         score = document.getElementById('score');
-    game = new SnakeGame(el, score, 2);
+    game = new SnakeGame(5, el, score);
     game.start();
 };

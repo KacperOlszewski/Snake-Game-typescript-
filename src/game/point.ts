@@ -31,3 +31,26 @@ export class Point {
         }
     }
 }
+
+describe('_getElementDimensions', () => {
+    it('should fetch', () => {
+        let elementsMock = [{
+            getBoundingClientRect: function () { return { height: 120, top: 700 }; }
+        }];
+        this.documentMock.nativeDocument = {
+            getElementsByClassName: jasmine.createSpy('getElementsByClassName'),
+            body: {
+                offsetHeight: 900
+            }
+        };
+        this.documentMock.nativeDocument.getElementsByClassName.and.returnValue(elementsMock);
+
+        this.LessonFlowDirectiveInstance.onClick();
+
+        expect(this.Renderer.setElementStyle).toHaveBeenCalledWith(
+            elementsMock[0],
+            'top',
+            '600px'
+        );
+    });
+});
