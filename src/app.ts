@@ -13,7 +13,7 @@ class SnakeGame {
     snakePositions: snakeArray[];
     food: Point[];
     score: number;
-    speed: number = 1100;
+    speed: number = 140;
     step: number;
 
     constructor(playersConstruction: number, canvas: HTMLCanvasElement, scoreOutput: HTMLElement) {
@@ -225,6 +225,6 @@ window.onload = () => {
 
     var el = <HTMLCanvasElement> document.getElementById('game-canvas'),
         score = document.getElementById('score');
-    game = new SnakeGame(5, el, score);
+    game = new SnakeGame(2, el, score);
     game.start();
 };
