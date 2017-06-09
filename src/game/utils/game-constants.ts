@@ -5,7 +5,7 @@ export const constants = {
     bonusDuration: 120,
     initialSpeed: 81,
     levelJump: 6,
-    gameWidth: 300,
-    gameHeight: 300,
+    canvasBonusCss: 'bonus',
+    newLevelCss: 'apply-pulse',
     highScoreStoreKey: 'pefSnakeHighScore'
 };

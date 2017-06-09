@@ -18,8 +18,6 @@ export class SnakeGameComponent {
     private bonusModeDuration: number;
     private speed: number;
     private step = 10;
-    private gameWidth = constants.gameWidth;
-    private gameHeight = constants.gameHeight;
     private interval: any;
     private snake: Snake;
     private food: Food;
@@ -27,7 +25,10 @@ export class SnakeGameComponent {
     constructor(
         private canvas: HTMLCanvasElement,
         private scoreOutput: HTMLElement,
-        private levelOutput: HTMLElement
+        private levelOutput: HTMLElement,
+        private gameWidth: number,
+        private gameHeight: number
+
     ) {
         this.movementController = new MovementController(this.step);
         this.collisionsController = new CollisionController(this.step, this.gameWidth, this.gameHeight);
@@ -44,14 +45,13 @@ export class SnakeGameComponent {
         this.setHighScore();
     }
 
-    setupGame() {
+    private setupGame() {
         this.canvas.width = this.gameWidth;
         this.canvas.height = this.gameHeight;
-
         this.canvasController = new CanvasController(this.canvas);
     }
 
-    startGame(): void {
+    private startGame(): void {
         this.restart();
         this.startInterval();
         this.printLevel();
@@ -59,12 +59,12 @@ export class SnakeGameComponent {
         this.movementController.setListener();
     }
 
-    stopGame() {
+    private stopGame() {
         this.endInterval();
         this.movementController.endListener();
     }
 
-    restart(): void {
+    private restart(): void {
         this.snake = new Snake();
         this.food = new Food(this.gameWidth, this.gameHeight);
 
@@ -81,17 +81,17 @@ export class SnakeGameComponent {
         this.collisionsController.inject(this.snake);
     }
 
-    startInterval() {
+    private startInterval() {
         this.interval = setInterval(() => {
             this.tick();
         }, this.speed);
     }
 
-    endInterval() {
+    private endInterval() {
         clearInterval(this.interval);
     }
 
-    tick(): void {
+    private tick(): void {
         this.move();
         this.updateSnakeSize();
         this.draw();
@@ -108,22 +108,22 @@ export class SnakeGameComponent {
         }
     }
 
-    draw(): void {
+    private draw(): void {
         this.canvasController.render(
             this.bonusMode,
             this.bonusModeDuration
         );
     }
 
-    move(): void {
+    private move(): void {
         this.movementController.moveSnake();
     }
 
-    updateSnakeSize(): void {
+    private updateSnakeSize(): void {
         this.snake.snakeSize();
     }
 
-    eat(): void {
+    private eat(): void {
         const snake = this.snake.head,
             food = this.food;
 
@@ -138,7 +138,7 @@ export class SnakeGameComponent {
         }
     }
 
-    changeLevel() {
+    private changeLevel() {
         if (this.points % constants.levelJump === 0) {
             this.level++;
             this.speed = this.speed - 4;
@@ -150,26 +150,26 @@ export class SnakeGameComponent {
         }
     }
 
-    printScore(): void {
+    private printScore(): void {
         this.score = this.points * 10;
         this.scoreOutput.innerHTML = `Score: ${this.score}`;
     }
 
-    printLevel(): void {
+    private printLevel(): void {
         this.levelOutput.innerHTML = `Level: ${this.level}`;
     }
 
-    setHighScore() {
+    private setHighScore() {
         if (this.score > this.highScore) {
             this.highScore = this.score;
         }
     }
 
-    snakeEatItself(): boolean {
+    private snakeEatItself(): boolean {
         return this.snake.eatsItself();
     }
 
-    snakeIsOutside(): boolean {
+    private snakeIsOutside(): boolean {
         if (this.bonusMode) {
             return false;
         }
@@ -177,7 +177,7 @@ export class SnakeGameComponent {
         return this.collisionsController.snakeIsOutside();
     }
 
-    transparentWallsMode() {
+    private transparentWallsMode() {
         if (!this.bonusMode) {
             return;
         }
@@ -185,25 +185,27 @@ export class SnakeGameComponent {
         this.collisionsController.moveSnakeOnWallCollision();
     }
 
-    activateBonus(bonusFood: boolean) {
+    private activateBonus(bonusFood: boolean) {
         if (bonusFood) {
             this.bonusMode = true;
+            this.canvas.className = constants.canvasBonusCss;
             this.bonusModeDuration = constants.bonusDuration;
         }
     }
 
-    bonusTimer() {
-        if (this.bonusMode) {
-            (this.bonusModeDuration <= 0) ?
-                this.bonusMode = false :
-                this.bonusModeDuration--;
+    private bonusTimer() {
+        if (this.bonusMode && this.bonusModeDuration <= 0) {
+            this.canvas.className = '';
+            this.bonusMode = false;
+        } else {
+            this.bonusModeDuration--;
         }
     }
 
-    newLevelPulse() {
-        this.scoreOutput.className = "apply-pulse";
+    private newLevelPulse() {
+        this.levelOutput.className = constants.newLevelCss;
         setTimeout(
-            () => this.scoreOutput.className = "", 200
+            () => this.levelOutput.className = '', 200
         );
     }
 }
