@@ -1,21 +1,15 @@
-export class Point {
+import {Point} from './point';
 
-    x: number;
-    y: number;
-
-    width: number;
-    height: number;
-
-    tail: Point;
+export class SnakeTail extends Point {
+    tail: SnakeTail;
 
     constructor(x: number, y: number) {
+        super();
         this.x = x;
         this.y = y;
-        this.width = 10;
-        this.height = 10;
     }
 
-    tailFollows(parent: Point) {
+    tailFollows(parent: SnakeTail) {
         if (this.tail != null) {
             this.tail.tailFollows(this);
         }
@@ -27,7 +21,7 @@ export class Point {
         if (this.tail != null) {
             this.tail.newTail();
         } else {
-            this.tail = new Point(this.x, this.y);
+            this.tail = new SnakeTail(this.x, this.y);
         }
     }
 }

@@ -5,9 +5,12 @@
     <title>Snake Game</title>
 </head>
 <body>
-<div class="game-div">
-    <h3 id="score"></h3>
-    <canvas id="game-canvas"></canvas>
-</div>
+    <div class="game-div">
+        <div class="status">
+            <div id="score" class="score"></div>
+            <div id="level" class="level"></div>
+        </div>
+        <canvas id="game-canvas" [ngClass]="{'bonus': bonusMode}" class="game-canvas"></canvas>
+    </div>
 </body>
 </html>
