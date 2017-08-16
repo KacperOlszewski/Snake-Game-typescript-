@@ -5,8 +5,7 @@
     "clean": "if test -d dist/; then rm -r dist; fi",
     "build": "webpack --progress",
     "build:prod": "webpack -p --progress",
-    "serve": "webpack && webpack-dev-server --inline",
-    "postinstall": "$(npm bin)/typings install"
+    "start": "webpack-dev-server --inline"
   },
   "devDependencies": {
     "css-loader": "^0.23.1",
@@ -17,9 +16,11 @@
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
     "ts-loader": "0.8.2",
-    "typescript": "1.8.10",
-    "typings": "1.1.0",
+    "typescript": "^2.3.4",
     "webpack": "1.13.1",
     "webpack-dev-server": "1.14.1"
+  },
+  "dependencies": {
+    "rxjs": "^5.4.0"
   }
 }

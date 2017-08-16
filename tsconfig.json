@@ -2,17 +2,19 @@
   "buildOnSave": false,
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "ES5",
+    "target": "es5",
     "module": "commonjs",
     "sourceMap": true,
-    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "removeComments": false,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "lib": [
+      "dom",
+      "es7"
+    ]
   },
   "exclude": [
-    "node_modules",
-    "typings/main.d.ts",
-    "typings/main"
+    "node_modules"
   ]
 }
